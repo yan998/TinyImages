@@ -15,13 +15,10 @@ def getInputParm():
     # 获取输入的参数
     for opt_name, opt_value in opts:
         if opt_name in ('-k', '--key'):
-            global tinifyKey
             tinifyKey = opt_value
         if opt_name in ('-f', '--fromFilePath'):
-            global fromFilePath
             fromFilePath = opt_value
         if opt_name in ('-t', '--toFilePath'):
-            global toFilePath
             toFilePath = opt_value
 
     if len(tinifyKey) == 0 or len(fromFilePath) == 0 or len(toFilePath) == 0:
