@@ -86,7 +86,7 @@ def findStrAtFilePath(fromFilePath, imageName):
             # print("--- " + os.path.join(root, name))
             # 获取文件名，扩展名
             fileName, fileSuffix = os.path.splitext(name)
-            if fileSuffix == '.m' or fileSuffix == '.xib' or fileSuffix == '.storyboard':
+            if fileSuffix == '.m' or fileSuffix == '.xib' or fileSuffix == '.storyboard' or fileSuffix == '.swift':
                 tempStr = '\"' + imageName
                 isFinded = findStrAtFileLine(root + '/' + name, tempStr)
                 if isFinded:
