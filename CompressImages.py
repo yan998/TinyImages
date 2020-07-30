@@ -1,4 +1,5 @@
 # coding:utf-8
+# 图片批量压缩
 
 import tinify
 import os
@@ -119,7 +120,6 @@ def printOperateResult(oldPngSum, newPngSum, oldJpgSum, newJpgSum, fromFileSize,
         unit = 'M'
 
     print("压缩前大小【%.2f %s】,压缩后大小【%.2f %s】" % (fromFileSize, unit, toFileSize, unit))
-
 
 
 if __name__ == '__main__':
