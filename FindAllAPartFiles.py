@@ -6,6 +6,7 @@ import os.path
 import sys
 import getopt
 
+
 # 获取入参参数
 def getInputParm():
     opts, args = getopt.getopt(sys.argv[1:], '-f:-p:-e:', ['findTypes=', 'path=', 'exceptPathNames='])
@@ -54,9 +55,14 @@ def checkFileInfo(findTypes, fromFilePath, exceptPathNames):
 
         # 查找是否有相同的文件名比如 .bundle
         for fileName in dirs:
+            filePath = root + '/' + fileName
+            # 检查某个数组中的文件名是否包含于路径中
+            isContinue = checkSomeFileNamesIsInPath(exceptPathNames, filePath)
+            if isContinue:
+                continue
+
             for willFindName in findTypes:
                 if willFindName in fileName:
-                    filePath = root + '/' + fileName
                     finalData[willFindName].append(filePath)
                     fileNum = fileNum + 1
                     break
@@ -69,14 +75,9 @@ def checkFileInfo(findTypes, fromFilePath, exceptPathNames):
             # print("=== %s" % (root + '/' + name))
             # 文件的路径
             filePath = root + '/' + name
-            isContinue = False
 
-            # 判断查找的文件是否在将要过滤的文件中
-            for exceptPathName in exceptPathNames:
-                if exceptPathName + '/' in filePath:
-                    isContinue = True
-                    break
-
+            # 检查某个数组中的文件名是否包含于路径中
+            isContinue = checkSomeFileNamesIsInPath(exceptPathNames, filePath)
             # 如果上面得出的结果是需要continue的，那么continue
             if isContinue:
                 continue
@@ -88,6 +89,16 @@ def checkFileInfo(findTypes, fromFilePath, exceptPathNames):
                 fileNum = fileNum + 1
 
     return finalData
+
+
+# 检查某个数组中的文件名是否包含于路径中
+def checkSomeFileNamesIsInPath(exceptPathNames, filePath):
+    # 判断查找的文件是否在将要过滤的文件中
+    for exceptPathName in exceptPathNames:
+        if exceptPathName + '/' in filePath:
+            return True
+            break
+    return False
 
 
 if __name__ == '__main__':
