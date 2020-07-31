@@ -110,12 +110,18 @@ def checkSomeFileNamesIsInPath(exceptPathNames, filePath):
 def getFilePathSize(filePathStr):
     fileSize = 0
     for root, dirs, files in os.walk(filePathStr):
-        for name in files:
-            # os.path.join路径拼接   os.path.join(root, name) 直接获取最里面一层文件
-            # 文件的路径
-            filePath = root + '/' + name
-            # 统计文件大小
-            fileSize = fileSize + os.path.getsize(filePath)
+       # 防止有的文件找不到
+        try:
+            for name in files:
+                # os.path.join路径拼接   os.path.join(root, name) 直接获取最里面一层文件
+                # 文件的路径
+                filePath = root + '/' + name
+                # 统计文件大小
+                fileSize = fileSize + os.path.getsize(filePath)
+        except IOError:
+            print("")
+
+
     return ("%dB*" % (fileSize))
 
 
