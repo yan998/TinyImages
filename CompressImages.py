@@ -1,6 +1,5 @@
 # coding:utf-8
 # 图片批量压缩
-
 import tinify
 import os
 import os.path
@@ -51,6 +50,7 @@ def compress(tinifyKey, fromFilePath, toFilePath, allFileNum):
     jpgSum = 0
     toFileSize = 0
     hasOperateNum = 0
+    failedImages = []
 
     # 压缩图片的key
     tinify.key = tinifyKey
@@ -71,17 +71,31 @@ def compress(tinifyKey, fromFilePath, toFilePath, allFileNum):
 
             # 如果扩展名是 png 或者是 jpg 的 再去压缩，其他的不管
             if fileSuffix == '.png' or fileSuffix == '.jpg':
-                # 使用 tinify 进行压缩和写入
-                source = tinify.from_file(root + '/' + name)
-                source.to_file(toFullName)
 
-                # 统计文件大小
-                toFileSize = toFileSize + os.path.getsize(toFullName)
+                # 避免有的图片tinify解析不了
+                try:
+                    # 使用 tinify 进行压缩和写入
+                    source = tinify.from_file(root + '/' + name)
+                    source.to_file(toFullName)
 
-                if fileSuffix == '.png':
-                    pngSum = pngSum + 1;
-                elif fileSuffix == '.jpg':
-                    jpgSum = jpgSum + 1
+                except:
+                    # 图片压缩失败记录
+                    failedImages.append(name)
+                    # 并且原路拷贝回去
+                    shutil.copy2(root + '/' + name, toFullName)
+                    # 统计文件大小
+                    toFileSize = toFileSize + os.path.getsize(toFullName)
+                else:
+                    print("*********当前压缩成功的图片 %s" % name)
+                    # 统计文件大小
+                    toFileSize = toFileSize + os.path.getsize(toFullName)
+                    # 压缩成功
+                    if fileSuffix == '.png':
+                        pngSum = pngSum + 1
+                    elif fileSuffix == '.jpg':
+                        jpgSum = jpgSum + 1
+
+
             else:
                 # 非  png 和 jpg的文件，原路拷贝回去
                 shutil.copy2(root + '/' + name, toFullName)
@@ -99,15 +113,16 @@ def compress(tinifyKey, fromFilePath, toFilePath, allFileNum):
             sys.stdout.write("\r# 已压缩png【%d 张】已压缩jpg【%d张】| 当前完成进度: %.1f %%" % (pngSum, jpgSum, percent * 100))
             sys.stdout.flush()
 
-    return pngSum, jpgSum, toFileSize, hasOperateNum
+    return pngSum, jpgSum, toFileSize, hasOperateNum, failedImages
 
 
 # 打印最终的处理结果
-def printOperateResult(oldPngSum, newPngSum, oldJpgSum, newJpgSum, fromFileSize, toFileSize, oldFileSum, newFileSum):
+def printOperateResult(oldPngSum, newPngSum, oldJpgSum, newJpgSum, fromFileSize, toFileSize, oldFileSum, newFileSum,
+                       failedImages):
     print("\n\n压缩完成 ........")
-    print("png图片：压缩前【%d 张】压缩后【%d 张】" % (oldPngSum, newPngSum))
-    print("jpg图片：压缩前【%d 张】压缩后【%d 张】" % (oldJpgSum, newJpgSum))
-    print("压缩前图片总数【%d 张】压缩后【%d 张】" % ((oldPngSum + oldJpgSum), (newPngSum + newJpgSum)))
+    print("png图片：压缩前【%d 张】成功压缩【%d 张】" % (oldPngSum, newPngSum))
+    print("jpg图片：压缩前【%d 张】成功压缩【%d 张】" % (oldJpgSum, newJpgSum))
+    print("压缩前图片总数【%d 张】成功压缩【%d 张】" % ((oldPngSum + oldJpgSum), (newPngSum + newJpgSum)))
     print("压缩前文件总数【%d 张】压缩后【%d 张】" % (oldFileSum, newFileSum))
 
     # 压缩前和压缩后的文件大小对比
@@ -121,6 +136,11 @@ def printOperateResult(oldPngSum, newPngSum, oldJpgSum, newJpgSum, fromFileSize,
 
     print("压缩前大小【%.2f %s】,压缩后大小【%.2f %s】" % (fromFileSize, unit, toFileSize, unit))
 
+    if len(failedImages) > 0:
+        print("\n\033[0;31;40m【%d张】图片压缩失败---可能是因为tinify压缩失败，也可能是因为key超过使用数量 \033[0m" % len(failedImages))
+        for imageStr in failedImages:
+            print("\033[1;31;40m %s \033[0m" % imageStr)
+
 
 if __name__ == '__main__':
     # 获取入参
@@ -131,10 +151,10 @@ if __name__ == '__main__':
     print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ")
     # 询问是否将要继续压缩
     inputStr = input("待压缩文件已检测完毕，是否继续下一步压缩操作（1/0）:")
-    if inputStr != '1':
+    if str(inputStr) != '1':
         exit(1)
     print("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ")
     # 开始压缩
-    pngSum, jpgSum, toFileSize, fileSum = compress(tinifyKey, fromFilePath, toFilePath, map["allFileSum"])
+    pngSum, jpgSum, toFileSize, fileSum, failedImages = compress(tinifyKey, fromFilePath, toFilePath, map["allFileSum"])
     printOperateResult(map["pngSum"], pngSum, map["jpgSum"], jpgSum, map["fileSize"], toFileSize, map["allFileSum"],
-                       fileSum)
+                       fileSum, failedImages)
